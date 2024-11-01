@@ -2,6 +2,14 @@ import { execSync } from "node:child_process";
 import fs, { writeFileSync } from "node:fs";
 import path from "node:path";
 
+class Parser {
+	constructor(src) {
+		this.src = src;
+	}
+
+	parse() {}
+}
+
 const template = `
 extern "Rust" {
     fn compile_code(code: &[u8]);
