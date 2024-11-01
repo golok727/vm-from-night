@@ -14,5 +14,5 @@ rustc main.rs -L ./vm/lib -l static=vm -o ./target/main
 
 ## use .pgm file
 ```bash
-node ./cli.mjs ./thing.pgm
+node ./compiler.mjs ./thing.pgm
 ```
