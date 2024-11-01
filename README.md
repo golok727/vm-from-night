@@ -12,7 +12,7 @@ rustc main.rs -L ./vm/lib -l static=vm -o ./target/main
 ./target/main
 ```
 
-## use .pgm file
+## use .thing file
 ```bash
-node ./compiler.mjs ./thing.pgm
+node ./compiler.mjs ./code.thing
 ```

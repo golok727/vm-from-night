@@ -90,7 +90,10 @@ impl<'a> Vm<'a> {
 }
 
 #[no_mangle]
-pub fn run_vm(code: &[u8]) {
+pub fn execute_bytecode(code: &[u8]) {
     let mut compiler = Vm::new(code);
-    compiler.compile().unwrap();
+
+    if let Err(e) = compiler.compile() {
+        eprintln!("Error during VM execution: {}", e);
+    }
 }

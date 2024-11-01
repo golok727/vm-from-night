@@ -1,5 +1,5 @@
 extern "Rust" {
-    fn run_vm(code: &[u8]);
+    fn execute_bytecode(code: &[u8]);
 }
 
 #[repr(C)]
@@ -58,7 +58,7 @@ fn main() {
     }
 
     unsafe {
-        run_vm(bytecode.as_ref());
+        execute_bytecode(bytecode.as_ref());
     }
 
     let mut binary_file = fs::File::create("./thing.instructions").unwrap();

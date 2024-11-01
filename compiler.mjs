@@ -5,6 +5,7 @@ import path from "node:path";
 const OP_LOAD = 0x01;
 const OP_ADD = 0x02;
 const OP_PRINT = 0x03;
+const OP_END = 0x04;
 
 class DynBuffer {
 	constructor(initialSize = 1024) {
@@ -23,14 +24,12 @@ class DynBuffer {
 
 	writeU8(value) {
 		this._ensureCapacity(1);
-		this._buffer.writeUInt8(value, this._length);
-		this._length += 1;
+		this._length = this._buffer.writeUInt8(value, this._length);
 	}
 
 	writeInt32(value) {
 		this._ensureCapacity(4);
-		this._buffer.writeInt32LE(value, this._length);
-		this._length += 4;
+		this._length = this._buffer.writeInt32LE(value, this._length);
 	}
 
 	getBuffer() {
@@ -58,6 +57,9 @@ const Operations = {
 	},
 	PRINT: (buffer) => {
 		buffer.writeU8(OP_PRINT);
+	},
+	END: (buffer) => {
+		buffer.writeU8(OP_END);
 	},
 };
 
@@ -87,13 +89,13 @@ class Compiler {
 
 const template = `
 extern "Rust" {
-    fn run_vm(code: &[u8]);
+    fn execute_bytecode(code: &[u8]);
 }
 {{ constants }}
 fn main() {
 {{ beforeRun }}
 unsafe {
-  run_vm({{ compileCodeArgs }});
+  execute_bytecode({{ compileCodeArgs }});
 }
 {{ afterRun }}
 }
