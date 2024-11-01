@@ -57,11 +57,10 @@ fn main() {
         bytecode.extend(instruction.to_bytes());
     }
 
-    dbg!(&bytecode);
-
     unsafe {
         compile_code(bytecode.as_ref());
     }
+
     let mut binary_file = fs::File::create("./thing.instructions").unwrap();
     binary_file.write_all(bytecode.as_ref()).unwrap();
 }
