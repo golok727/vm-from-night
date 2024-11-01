@@ -12,15 +12,15 @@ class Parser {
 
 const template = `
 extern "Rust" {
-    fn compile_code(code: &[u8]);
+    fn run_vm(code: &[u8]);
 }
 {{ constants }}
 fn main() {
-{{ beforeCompile }}
+{{ beforeRun }}
 unsafe {
-  compile_code({{ compileCodeArgs }});
+  run_vm({{ compileCodeArgs }});
 }
-{{ afterCompile }}
+{{ afterRun }}
 }
 `;
 
@@ -58,7 +58,7 @@ function compileWithRustC(code, outName) {
 	console.info("> Staring compilation!");
 
 	try {
-		execSync(`rustc ${rsFilePath} -L ./compiler/lib -l static=compiler`);
+		execSync(`rustc ${rsFilePath} -L ./vm/lib -l static=compiler`);
 	} catch (err) {
 		console.error("> Error compiling");
 		clean(tempDir);

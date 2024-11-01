@@ -4,20 +4,20 @@ const OP_LOAD: u8 = 0x01;
 const OP_ADD: u8 = 0x02;
 const OP_PRINT: u8 = 0x03;
 
-struct Compiler<'a> {
+struct Vm<'a> {
     ip: usize,
     stack: Vec<i32>,
     code: &'a [u8],
 }
 
 #[derive(Debug, Clone)]
-enum CompilationError {
+enum VmError {
     UnknownCode,
     UnexpectedEOF,
     InsufficientArguments,
 }
 
-impl fmt::Display for CompilationError {
+impl fmt::Display for VmError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let message = match self {
             Self::UnknownCode => "Unknown Byte Code",
@@ -25,11 +25,11 @@ impl fmt::Display for CompilationError {
             Self::InsufficientArguments => "InsufficientArguments",
         };
 
-        write!(f, "[CompilationError]: {message}")
+        write!(f, "[VmError]: {message}")
     }
 }
 
-impl<'a> Compiler<'a> {
+impl<'a> Vm<'a> {
     pub fn new(code: &'a [u8]) -> Self {
         Self {
             ip: 0,
@@ -38,14 +38,14 @@ impl<'a> Compiler<'a> {
         }
     }
 
-    pub fn compile(&mut self) -> Result<(), CompilationError> {
+    pub fn compile(&mut self) -> Result<(), VmError> {
         while let Some(opcode) = self.read_byte() {
             match opcode {
                 OP_LOAD => self.op_load()?,
                 OP_ADD => self.op_add()?,
                 OP_PRINT => self.op_print()?,
                 _ => {
-                    return Err(CompilationError::UnknownCode);
+                    return Err(VmError::UnknownCode);
                 }
             }
         }
@@ -63,25 +63,25 @@ impl<'a> Compiler<'a> {
         }
     }
 
-    pub fn op_add(&mut self) -> Result<(), CompilationError> {
-        let a = self.stack.pop().ok_or(CompilationError::InsufficientArguments)?;
-        let b = self.stack.pop().ok_or(CompilationError::InsufficientArguments)?;
+    pub fn op_add(&mut self) -> Result<(), VmError> {
+        let a = self.stack.pop().ok_or(VmError::InsufficientArguments)?;
+        let b = self.stack.pop().ok_or(VmError::InsufficientArguments)?;
         self.stack.push(a + b);
         Ok(())
     }
 
-    pub fn op_print(&mut self) -> Result<(), CompilationError> {
-        let to_print = self.stack.last().ok_or(CompilationError::InsufficientArguments)?;
+    pub fn op_print(&mut self) -> Result<(), VmError> {
+        let to_print = self.stack.last().ok_or(VmError::InsufficientArguments)?;
         println!("[STD_OUT] {}", to_print);
         Ok(())
     }
 
-    pub fn op_load(&mut self) -> Result<(), CompilationError> {
+    pub fn op_load(&mut self) -> Result<(), VmError> {
         let value = i32::from_le_bytes([
-            self.read_byte().ok_or(CompilationError::UnexpectedEOF)?,
-            self.read_byte().ok_or(CompilationError::UnexpectedEOF)?,
-            self.read_byte().ok_or(CompilationError::UnexpectedEOF)?,
-            self.read_byte().ok_or(CompilationError::UnexpectedEOF)?,
+            self.read_byte().ok_or(VmError::UnexpectedEOF)?,
+            self.read_byte().ok_or(VmError::UnexpectedEOF)?,
+            self.read_byte().ok_or(VmError::UnexpectedEOF)?,
+            self.read_byte().ok_or(VmError::UnexpectedEOF)?,
         ]);
 
         self.stack.push(value);
@@ -90,7 +90,7 @@ impl<'a> Compiler<'a> {
 }
 
 #[no_mangle]
-pub fn compile_code(code: &[u8]) {
-    let mut compiler = Compiler::new(code);
+pub fn run_vm(code: &[u8]) {
+    let mut compiler = Vm::new(code);
     compiler.compile().unwrap();
 }

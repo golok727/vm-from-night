@@ -1,15 +1,14 @@
 testing some things out
 
-## Build compiler
+## Build vm
 ```bash
-chmod +x build_compiler.sh
-./build_compiler.sh
+chmod +x build_vm.sh
+./build_vm.sh
 ```
 
 ### Test simple program
-
 ```bash
-rustc main.rs -L ./compiler/lib -l static=compiler -o ./target/main
+rustc main.rs -L ./vm/lib -l static=vm -o ./target/main 
 ./target/main
 ```
 
