@@ -1,0 +1,4 @@
+{
+	"cSpell.words": ["rustfmt"],
+	"editor.defaultFormatter": "jinxdash.prettier-rust"
+}
