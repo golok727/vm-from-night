@@ -6,7 +6,7 @@ const OP_LOAD = 0x01;
 const OP_ADD = 0x02;
 const OP_PRINT = 0x03;
 
-class InstructionBuffer {
+class DynBuffer {
 	constructor(initialSize = 1024) {
 		this._buffer = Buffer.alloc(initialSize);
 		this._length = 0;
@@ -21,32 +21,25 @@ class InstructionBuffer {
 		}
 	}
 
-	pushLoad(value) {
-		this._ensureCapacity(5);
-		this._buffer.writeUInt8(OP_LOAD, this._length);
-		this._buffer.writeInt32LE(value, this._length + 1);
-		this._length += 5;
-	}
-
-	pushAdd() {
+	writeU8(value) {
 		this._ensureCapacity(1);
-		this._buffer.writeUInt8(OP_ADD, this._length);
+		this._buffer.writeUInt8(value, this._length);
 		this._length += 1;
 	}
 
-	pushPrint() {
-		this._ensureCapacity(1);
-		this._buffer.writeUInt8(OP_PRINT, this._length);
-		this._length += 1;
+	writeInt32(value) {
+		this._ensureCapacity(4);
+		this._buffer.writeInt32LE(value, this._length);
+		this._length += 4;
 	}
 
 	getBuffer() {
-		return this._buffer.slice(0, this._length);
+		return this._buffer.subarray(0, this._length); // Return only the used portion of the buffer
 	}
 }
 
 /**
- * @type {Record<string, (buffer: InstructionBuffer, args: string) => void>} buffer
+ * @type {Record<string, (buffer: DynBuffer, args: string) => void>} buffer
  */
 const Operations = {
 	LOAD: (buffer, args) => {
@@ -57,31 +50,32 @@ const Operations = {
 
 		const val = Number.parseInt(match[1]);
 
-		buffer.pushLoad(val);
+		buffer.writeU8(OP_LOAD);
+		buffer.writeInt32(val);
 	},
 	ADD: (buffer) => {
-		buffer.pushAdd();
+		buffer.writeU8(OP_ADD);
 	},
 	PRINT: (buffer) => {
-		buffer.pushPrint();
+		buffer.writeU8(OP_PRINT);
 	},
 };
 
-const INSTRUCTION_REGEX = /(?<instruction>\w+)\s?\s+?(?<args>.*)/;
+const INSTRUCTION_REGEX = /(?<instruction>\w+)(?<args>.*)?/;
 class Compiler {
 	constructor(src) {
 		this.src = src;
-		this.buffer = new InstructionBuffer();
+		this.buffer = new DynBuffer();
 	}
 
 	parse() {
 		const lines = this.src.split("\n");
 		for (const line of lines) {
-			const match = line.match(INSTRUCTION_REGEX);
+			const match = line.trim().match(INSTRUCTION_REGEX);
 			if (match?.groups) {
 				const { instruction, args } = match.groups;
-				if (instruction && Operations[instruction]) {
-					Operations[instruction](this.buffer, args ?? null);
+				if (instruction && Operations[instruction.toUpperCase()]) {
+					Operations[instruction.toUpperCase()](this.buffer, args ?? null);
 				} else {
 					console.warn(`Invalid op: "${instruction}". Skipping!`);
 				}
@@ -130,7 +124,7 @@ function quit(code = 1) {
 	process.exit(code);
 }
 
-function compileWithRustC(code, outName) {
+function compileWithRustC(code, outName, { optimized = true } = {}) {
 	const rsFilePath = path.resolve(`./temp/${outName || "main"}.rs`);
 	const tempDir = path.dirname(rsFilePath);
 
@@ -139,7 +133,11 @@ function compileWithRustC(code, outName) {
 	console.info("> Staring compilation!");
 
 	try {
-		execSync(`rustc ${rsFilePath} -L ./vm/lib -l static=vm`);
+		// todo
+		const OPT_FLAGS = optimized ? "" : "";
+		execSync(
+			`rustc ${rsFilePath} ${OPT_FLAGS} -L ./vm/lib -l static=vm -o ./target/${outName}`
+		);
 	} catch (err) {
 		console.error("> Error compiling");
 		clean(tempDir);
@@ -164,8 +162,6 @@ function createExecutable(byteCode, outName = "compiled") {
 		compileCodeArgs: "INSTRUCTIONS",
 	});
 
-	console.log(code);
-
 	compileWithRustC(code, outName);
 }
 
@@ -182,6 +178,5 @@ try {
 
 	createExecutable(byteCode, outName);
 } catch (e) {
-	console.error("Error creating executable!");
-	console.error(e);
+	console.error("Error creating executable!", e);
 }

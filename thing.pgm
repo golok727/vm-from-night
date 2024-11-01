@@ -1,4 +1,10 @@
-LOAD 10
-LOAD 10
-ADD 
-PRINT
+Load 10
+Add
+Print
+Load 30
+Add
+Print
+Load 50
+Add
+Print
+
