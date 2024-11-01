@@ -139,7 +139,7 @@ function compileWithRustC(code, outName) {
 	console.info("> Staring compilation!");
 
 	try {
-		execSync(`rustc ${rsFilePath} -L ./vm/lib -l static=compiler`);
+		execSync(`rustc ${rsFilePath} -L ./vm/lib -l static=vm`);
 	} catch (err) {
 		console.error("> Error compiling");
 		clean(tempDir);
