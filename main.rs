@@ -1,5 +1,5 @@
 extern "Rust" {
-    fn execute_bytecode(code: &[u8]);
+    fn execute_bytecode(code: *const u8, length: usize);
 }
 
 #[repr(C)]
@@ -58,7 +58,7 @@ fn main() {
     }
 
     unsafe {
-        execute_bytecode(bytecode.as_ref());
+        execute_bytecode(bytecode.as_ptr(), bytecode.len());
     }
 
     let mut binary_file = fs::File::create("./thing.instructions").unwrap();

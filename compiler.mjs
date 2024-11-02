@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
 import fs, { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { executeByteCode } from "./compiler_wasm_load.mjs";
 
 const OP_LOAD = 0x01;
 const OP_ADD = 0x02;
@@ -89,7 +90,7 @@ class Compiler {
 
 const template = `
 extern "Rust" {
-    fn execute_bytecode(code: &[u8]);
+    fn execute_bytecode(code: *const u8, length: usize);
 }
 {{ constants }}
 fn main() {
@@ -161,24 +162,40 @@ function createExecutable(byteCode, outName = "compiled") {
 
 	const code = codeGen({
 		constants: [`const INSTRUCTIONS: &[u8] = &[${bufferInput}];`],
-		compileCodeArgs: "INSTRUCTIONS",
+		compileCodeArgs: "INSTRUCTIONS.as_ptr(), INSTRUCTIONS.len()",
 	});
 
 	compileWithRustC(code, outName);
 }
 
-try {
-	const [filePath] = process.argv.splice(2);
+(async () => {
+	try {
+		const [filePath, opt] = process.argv.splice(2);
 
-	if (filePath === undefined) throw "Usage: cli.mjs any.pgm";
+		if (filePath === undefined) throw "Usage: cli.mjs any.pgm";
 
-	const src = readFileSync(path.resolve(filePath), { encoding: "utf-8" });
+		const src = readFileSync(path.resolve(filePath), { encoding: "utf-8" });
+		const compiler = new Compiler(src);
+		const byteCode = compiler.parse();
 
-	const outName = path.basename(filePath, path.extname(filePath));
-	const compiler = new Compiler(src, outName);
-	const byteCode = compiler.parse();
+		switch (opt) {
+			case undefined:
+			case "run": {
+				await executeByteCode(byteCode);
+				break;
+			}
 
-	createExecutable(byteCode, outName);
-} catch (e) {
-	console.error("Error creating executable!", e);
-}
+			case "compile": {
+				const outName = path.basename(filePath, path.extname(filePath));
+
+				createExecutable(byteCode, outName);
+				break;
+			}
+
+			default:
+				throw `Invalid option: ${opt}`;
+		}
+	} catch (e) {
+		console.error("Error", e);
+	}
+})();
