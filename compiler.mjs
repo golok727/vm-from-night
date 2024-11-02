@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { execSync } from "node:child_process";
 import fs, { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -172,7 +173,7 @@ function createExecutable(byteCode, outName = "compiled") {
 	try {
 		const [filePath, opt] = process.argv.splice(2);
 
-		if (filePath === undefined) throw "Usage: cli.mjs any.pgm";
+		if (filePath === undefined) throw "Usage: compiler.mjs any.pgm";
 
 		const src = readFileSync(path.resolve(filePath), { encoding: "utf-8" });
 		const compiler = new Compiler(src);
