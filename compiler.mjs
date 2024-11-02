@@ -173,7 +173,7 @@ function createExecutable(byteCode, outName = "compiled") {
 	try {
 		const [filePath, opt] = process.argv.splice(2);
 
-		if (filePath === undefined) throw "Usage: compiler.mjs any.pgm";
+		if (filePath === undefined) throw "Usage: compiler.mjs any.thing";
 
 		const src = readFileSync(path.resolve(filePath), { encoding: "utf-8" });
 		const compiler = new Compiler(src);

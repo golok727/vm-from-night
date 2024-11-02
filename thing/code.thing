@@ -12,3 +12,6 @@ add
 add
 print
 print
+load 77
+add
+print
