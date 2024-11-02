@@ -1,4 +1,4 @@
-extern "Rust" {
+extern "C" {
     fn execute_bytecode(code: *const u8, length: usize);
 }
 

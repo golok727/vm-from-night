@@ -90,7 +90,7 @@ class Compiler {
 }
 
 const template = `
-extern "Rust" {
+extern "C" {
     fn execute_bytecode(code: *const u8, length: usize);
 }
 {{ constants }}
