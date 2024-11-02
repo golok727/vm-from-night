@@ -61,6 +61,6 @@ fn main() {
         execute_bytecode(bytecode.as_ptr(), bytecode.len());
     }
 
-    let mut binary_file = fs::File::create("./thing.instructions").unwrap();
+    let mut binary_file = fs::File::create("./thing/thing.instructions").unwrap();
     binary_file.write_all(bytecode.as_ref()).unwrap();
 }

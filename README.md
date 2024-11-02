@@ -13,8 +13,8 @@ rustc main.rs -L ./vm/lib -l static=vm -o ./target/main
 
 ## use .thing file
 ```bash
-node ./compiler.mjs ./code.thing # jit
-node ./compiler.mjs ./code.thing run # jit
+node ./compiler.mjs ./thing/code.thing # jit
+node ./compiler.mjs ./thing/code.thing run # jit
 
-node ./compiler.mjs ./code.thing compile && ./target/code # compiled
+node ./compiler.mjs ./thing/code.thing compile && ./target/code # compiled
 ```
