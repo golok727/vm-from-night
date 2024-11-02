@@ -6,3 +6,8 @@ load 980
 add
 print
 print
+load 1000
+load 10000
+add
+add
+print
