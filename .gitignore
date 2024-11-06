@@ -1,2 +1,6 @@
 target/
 vm/lib/*
+
+# Added by cargo
+
+/target

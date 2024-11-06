@@ -7,6 +7,7 @@ const OP_PRINT: u8 = 0x03;
 #[cfg(target_arch = "wasm32")]
 extern "C" {
     fn js_print_value(msg: *const u8, len: usize); // Only called in WASM context
+
     fn js_report_error(msg: *const u8, len: usize);
 }
 
